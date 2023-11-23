@@ -1,26 +1,19 @@
+//import classes
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import {config} from "dotenv";
-import * as test from "./commands/test.js";
+import { config } from "dotenv";
 
 config();
 
-const client = new Client({
-    intents: [GatewayIntentBits.Guilds],
+//create new client
+//NB: guilds is what discord refers to as servers
+const client = new Client({ intents: [GatewayIntentBits.Guilds]});
+
+//when the client is ready run this code once
+//use c for the event parameter to keep it seperate from the defined "client"
+
+client.once(Events.ClientReady, c => {
+    console.log('Ready! Logged in as ' + c.user.tag);
 });
 
-function readyDiscord(){
-    console.log("deez nuts " + client.user.tag);
-}
-
-async function handleInteraction(interaction){
-    if(!interaction.isCommand()) return;
-    if(interaction.commandName === "test"){
-        await test.execute(interaction);
-    }
-}
-
-client.once(Events.ClientReady, readyDiscord);
-
+//log in to discord with your client's token
 client.login(process.env.TOKEN);
-
-client.on(Events.InteractionCreate, handleInteraction);
