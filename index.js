@@ -1,19 +1,13 @@
-//import classes
-import * as fs from "fs";
-import * as path from "path";
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
-import { config } from "dotenv";
+const fs = require('node:fs');
+const path = require('node:path');
+const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const dotenv = require("dotenv");
 
-config();
+dotenv.config();
 
-//create new client
-//NB: guilds is what discord refers to as servers
-const client = new Client({ intents: [GatewayIntentBits.Guilds]});
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
-
-//console.log(__dirname);
-
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -31,33 +25,27 @@ for (const folder of commandFolders) {
 	}
 }
 
-//when the client is ready run this code once
-//use c for the event parameter to keep it seperate from the defined "client"
-
-client.once(Events.ClientReady, c => {
-    console.log('Ready! Logged in as ' + c.user.tag);
+client.once(Events.ClientReady, () => {
+	console.log('Ready! ' + client.user.tag);
 });
 
-//log in to discord with your client's token
-client.login(process.env.TOKEN);
-
 client.on(Events.InteractionCreate, async interaction => {
-    if(!interaction.isChatInputCommand()) return;
-    const command = interaction.client.commands.get(interaction.commandName);
-    
-    if(!command){
-        console.error("No command matching" + interaction.commandName + "was found.");
-        return;
-    }
+	if (!interaction.isChatInputCommand()) return;
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        if(interaction.replied || interaction.deferred){
-            await interaction.followUp({content: "There was an error whilst executing this command!", ephemeral: true});
-        } else {
-            await interaction.reply({content: "There was an error while exectuting this command!", ephemeral: true});
-        }
-    }
-})
+	const command = client.commands.get(interaction.commandName);
+
+	if (!command) return;
+
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		} else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	}
+});
+
+client.login(process.env.TOKEN);
